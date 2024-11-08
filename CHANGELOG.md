@@ -1,5 +1,19 @@
 ## Changelog
 
+### Version 2.0 - Nginx Basic Deployment
+
+**Branch**: `release/v2.0`
+
+#### Features:
+- **MONITORING.md**:
+  - Setup Helm
+  - Install Loki Helm Charts
+  - Install grafana Helm Charts
+- **Readme.md**:
+  - Added all k8s commands
+
+---
+
 ### Version 1.0 - Nginx Basic Deployment
 
 **Branch**: `release/v1.0`

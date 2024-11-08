@@ -1,80 +1,200 @@
-# Kubernetes Nginx Deployment on Minikube
+# Kubernetes Commands Reference Guide
 
-## Task: Deploy an Nginx container and access it via the browser
+## Table of Contents
+1. [Cluster Information](#cluster-information)
+2. [Resource Management](#resource-management)
+3. [Pod Operations](#pod-operations)
+4. [Deployment Operations](#deployment-operations)
+5. [Service Operations](#service-operations)
+6. [Namespace Operations](#namespace-operations)
+7. [ConfigMap and Secrets](#configmap-and-secrets)
+8. [Logging and Debugging](#logging-and-debugging)
+9. [Port Forwarding](#port-forwarding)
+10. [Context and Configuration](#context-and-configuration)
 
-### Platform: Minikube
+## Cluster Information
+```bash
+# Get cluster information
+kubectl cluster-info
 
-### Prerequisites
-- Install Minikube: [Minikube Installation Guide](https://minikube.sigs.k8s.io/docs/start/?arch=%2Flinux%2Fx86-64%2Fstable%2Fbinary+download)
+# Check API versions supported
+kubectl api-versions
 
-### Setup Minikube
+# View kubectl configuration
+kubectl config view
 
-1. Install Minikube on Linux:
-   ```bash
-   curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-   sudo install minikube-linux-amd64 /usr/local/bin/minikube
-   rm minikube-linux-amd64
-   ```
+# Check component status
+kubectl get componentstatuses
 
-2. Start and interact with Minikube:
-   ```bash
-   minikube start       # Start Minikube
-   minikube status      # Check Minikube status
-   minikube dashboard   # Access Minikube dashboard in the browser
-   minikube ip          # Get Minikube Ip
-   ```
+# Get nodes information
+kubectl get nodes
+kubectl describe node <node-name>
+```
 
-### Common `kubectl` Commands
+## Resource Management
+```bash
+# Get all resources in current namespace
+kubectl get all
 
-- List resources (e.g., `pods`, `deployments`, `svc`, `ingress`, `namespaces`):
-  ```bash
-  kubectl get <component>
-  kubectl get <component> --show-labels
-  kubectl get <component> --all-namespaces
-  ```
+# Get all resources in all namespaces
+kubectl get all --all-namespaces
+kubectl get all -A
 
-- View detailed information about a component:
-  ```bash
-  kubectl describe <component> <component_name>
-  ```
+# Get specific resource types
+kubectl get pods,svc,deployments
+kubectl get <resource-type> --show-labels
 
-- Create or update resources from a YAML file:
-  ```bash
-  kubectl create -f <filename>.yaml   # Create a new resource
-  kubectl apply -f <filename>.yaml    # Apply changes to a resource; if already exist then upgrades it
-  ```
+# Watch resources in real-time
+kubectl get <resource-type> -w
 
-- Label a resource:
-  ```bash
-  kubectl label <component> <component_name> key=value
-  ```
+# Get detailed information about a resource
+kubectl describe <resource-type> <resource-name>
+```
 
-- Delete a resource:
-  ```bash
-  kubectl delete <component> <component_name>
-  ```
+## Pod Operations
+```bash
+# List pods
+kubectl get pods
+kubectl get pods -o wide
+kubectl get pods --field-selector=status.phase=Running
 
-### Nginx Ingress Setup
+# Create pod from file
+kubectl create -f pod.yaml
 
-To use Nginx Ingress in your Minikube cluster, follow these steps:
+# Delete pod
+kubectl delete pod <pod-name>
+kubectl delete pod <pod-name> --force --grace-period=0
 
-1. Apply the Nginx Ingress Controller:
-   ```bash
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.2/deploy/static/provider/cloud/deploy.yaml
-   ```
+# Execute command in pod
+kubectl exec -it <pod-name> -- /bin/bash
+kubectl exec <pod-name> -- <command>
 
-2. Run the Minikube tunnel to access the Nginx Ingress controller:
-   ```bash
-   minikube tunnel
-   ```
+# Copy files to/from pod
+kubectl cp <pod-name>:/path/to/file local-file
+kubectl cp local-file <pod-name>:/path/to/file
+```
 
-3. Verify the Ingress is created successfully by running:
-   ```bash
-   kubectl get ingress
-   ```
-   - Check the `ADDRESS` column in the output. If it is empty, the ingress has not been created successfully.
+## Deployment Operations
+```bash
+# Create and manage deployments
+kubectl create deployment <name> --image=<image>
+kubectl scale deployment <name> --replicas=<number>
+kubectl rollout status deployment/<name>
 
-Useful resources for Nginx Ingress:
+# Update deployment
+kubectl set image deployment/<name> <container>=<image>
+kubectl rollout history deployment/<name>
+kubectl rollout undo deployment/<name>
 
-- [Nginx Ingress Documentation](https://kubernetes.github.io/ingress-nginx/deploy/)
-- [Nginx Ingress GitHub Repository](https://github.com/kubernetes/ingress-nginx)
+# Edit deployment
+kubectl edit deployment <name>
+
+# Delete deployment
+kubectl delete deployment <name>
+```
+
+## Service Operations
+```bash
+# List services
+kubectl get services
+kubectl get svc
+
+# Create service
+kubectl expose deployment <name> --port=<port> --target-port=<target-port>
+kubectl create service clusterip <name> --tcp=<port>:<target-port>
+
+# Delete service
+kubectl delete service <name>
+```
+
+## Namespace Operations
+```bash
+# List namespaces
+kubectl get namespaces
+kubectl get ns
+
+# Create namespace
+kubectl create namespace <name>
+
+# Set default namespace
+kubectl config set-context --current --namespace=<name>
+
+# Delete namespace
+kubectl delete namespace <name>
+```
+
+## ConfigMap and Secrets
+```bash
+# ConfigMap operations
+kubectl create configmap <name> --from-file=<path>
+kubectl create configmap <name> --from-literal=key=value
+kubectl get configmaps
+kubectl describe configmap <name>
+
+# Secret operations
+kubectl create secret generic <name> --from-literal=key=value
+kubectl get secrets
+kubectl describe secret <name>
+```
+
+## Logging and Debugging
+```bash
+# View pod logs
+kubectl logs <pod-name>
+kubectl logs <pod-name> -c <container-name>
+kubectl logs -f <pod-name>  # Follow logs
+kubectl logs --tail=100 <pod-name>  # Last 100 lines
+
+# Debugging
+kubectl describe pod <pod-name>
+kubectl get events
+kubectl top pods  # Resource usage
+kubectl top nodes
+```
+
+## Port Forwarding
+```bash
+# Forward port from pod
+kubectl port-forward <pod-name> <local-port>:<pod-port>
+
+# Forward port from service
+kubectl port-forward service/<service-name> <local-port>:<service-port>
+
+# Forward with specific address binding
+kubectl port-forward --address 0.0.0.0 <pod-name> <local-port>:<pod-port>
+```
+
+## Context and Configuration
+```bash
+# View and manage contexts
+kubectl config get-contexts
+kubectl config use-context <context-name>
+kubectl config current-context
+
+# Set cluster
+kubectl config set-cluster <cluster-name> --server=<server-url>
+
+# Set credentials
+kubectl config set-credentials <user-name> --token=<bearer-token>
+
+# Set context
+kubectl config set-context <context-name> --cluster=<cluster-name> --user=<user-name>
+```
+
+## Tips and Best Practices
+1. Use `-o wide` for additional information in output
+2. Use `--dry-run=client -o yaml` to generate resource YAML
+3. Use labels and selectors for better resource management
+4. Always specify namespace when working in large clusters
+5. Use `kubectl explain <resource>` for resource documentation
+
+## Common Flags and Options
+```bash
+-n, --namespace           # Specify namespace
+-o, --output             # Output format (yaml, json, wide, etc.)
+-l, --selector           # Label selector
+-A, --all-namespaces     # All namespaces
+-f, --filename           # Specify resource file
+--force                  # Force operation
+--dry-run=client        # Simulate operation
+```

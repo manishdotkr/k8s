@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: <app>-dep
+  namespace: <namespace>
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: <app_name>
+  template:
+    metadata:
+      labels:
+        app: <app_name>
+    spec:
+      containers:
+      - name: <container1_name>
+        image: <container_image_path>
+        imagePullPolicy: Always
+        ports:
+        - containerPort: <container_application_port>
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+      - name: fluentd
+        image: ghcr.io/book-vault/fluentd:v1
+        env:
+        - name: FLUENTD_CONF
+          value: "fluent.conf"
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+        - name: fluentd-config
+          mountPath: /fluentd/etc
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+      volumes:
+      - name: logs
+        emptyDir: {}
+      - name: fluentd-config
+        configMap:
+          name: fluentd-config
+      imagePullSecrets:
+      - name: <container_hub_secrets>
