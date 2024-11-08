@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: <app>-igrs
+  namespace: <namespace>
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - <url_with_subdomain>
+    secretName: <container_hub_secrets>
+  rules:
+  - host: <url_with_subdomain>
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: <service_name>
+            port:
+              number: 80
