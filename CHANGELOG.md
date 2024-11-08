@@ -2,7 +2,7 @@
 
 ### Version 2.0 - Nginx Basic Deployment
 
-**Branch**: `main`
+**Branch**: `release/v2.0`
 
 #### Features:
 - **MONITORING.md**:
